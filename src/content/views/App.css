@@ -1,0 +1,3 @@
+/* Content script styles — keep this file empty or minimal.
+   Do NOT import Tailwind here. Preflight/resets will break the host page (e.g. ChatGPT).
+   Use inline styles on components instead. */

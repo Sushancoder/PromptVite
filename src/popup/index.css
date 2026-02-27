@@ -1,0 +1,4 @@
+/* Import common styles shared between popup and sidepanel */
+@import "../index.css";
+
+/* Popup-specific styles can be added here */
