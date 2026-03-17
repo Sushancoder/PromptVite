@@ -39,7 +39,7 @@ PromptVite solves that directly inside the input box.
 
 - While typing in an AI chat input:
   - the extension analyzes current input text,
-  - surfaces up to **3 relevant saved prompts**.
+  - surfaces up to **3 relevant saved prompts** above the input box.
 - Suggestions are similarity-based, not exact matches.
 
 ---

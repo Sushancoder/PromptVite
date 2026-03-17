@@ -25,9 +25,9 @@ export default defineManifest({
     "_execute_action": {  // Special Chrome command
       "suggested_key": {
         "default": "Ctrl+Shift+Y",
-        "mac": "Command+Shift+Y"
+        "mac": "Command+Shift+Y",
       },
-      "description": "Open PromptVite Popup"
+      "description": "Open PromptVite"
     }
   },
   permissions: [
@@ -46,7 +46,10 @@ export default defineManifest({
   },
   content_scripts: [{
     js: ['src/content/main.tsx'],
-    matches: ['https://chatgpt.com/*'],
+    matches: [
+      'https://chatgpt.com/*',
+      'https://gemini.google.com/*',
+    ],
     run_at: 'document_idle',
   }],
   side_panel: {

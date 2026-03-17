@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 
 type KeyStatus = 'loading' | 'saved' | 'empty'
 
@@ -10,14 +11,22 @@ export default function App() {
     const [apiKey, setApiKey] = useState('')
     const [status, setStatus] = useState<KeyStatus>('loading')
 
-    // Load saved key status on mount
+    const [suggestionEnabled, setSuggestionEnabled] = useState(true)
+    const [enhanceEnabled, setEnhanceEnabled] = useState(true)
+    const [featuresLoading, setFeaturesLoading] = useState(true)
+
+    // Load saved key status and feature flags on mount
     useEffect(() => {
-        chrome.storage.local.get('geminiApiKey', (result) => {
+        chrome.storage.local.get(['geminiApiKey', 'suggestionEnabled', 'enhanceEnabled'], (result) => {
             if (result.geminiApiKey) {
                 setStatus('saved')
             } else {
                 setStatus('empty')
             }
+            // Default to true if flag not yet set
+            setSuggestionEnabled(result.suggestionEnabled !== false)
+            setEnhanceEnabled(result.enhanceEnabled !== false)
+            setFeaturesLoading(false)
         })
     }, [])
 
@@ -34,6 +43,16 @@ export default function App() {
         await chrome.storage.local.remove('geminiApiKey')
         setStatus('empty')
         setApiKey('')
+    }
+
+    const handleSuggestionToggle = async (checked: boolean) => {
+        setSuggestionEnabled(checked)
+        await chrome.storage.local.set({ suggestionEnabled: checked })
+    }
+
+    const handleEnhanceToggle = async (checked: boolean) => {
+        setEnhanceEnabled(checked)
+        await chrome.storage.local.set({ enhanceEnabled: checked })
     }
 
     return (
@@ -101,6 +120,57 @@ export default function App() {
                                 Get your free Gemini API key →
                             </a>
                         </p>
+                    </CardContent>
+                </Card>
+
+                {/* Features Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Features</CardTitle>
+                        <CardDescription>
+                            Enable or disable individual PromptVite features on ChatGPT.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-5">
+                        {/* Suggestion Feature */}
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="suggestion-toggle" className="text-sm font-medium">
+                                    Prompt Suggestions
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Show saved-prompt dropdown when you type <code className="bg-muted px-1 rounded">#keyword</code>
+                                </p>
+                            </div>
+                            <Switch
+                                className='cursor-pointer'
+                                id="suggestion-toggle"
+                                checked={suggestionEnabled}
+                                onCheckedChange={handleSuggestionToggle}
+                                disabled={featuresLoading}
+                            />
+                        </div>
+
+                        <div className="border-t" />
+
+                        {/* Enhance / Pencil Feature */}
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="enhance-toggle" className="text-sm font-medium">
+                                    Prompt Improver Button
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Show the ✏️ pencil button to AI-enhance your prompt before sending
+                                </p>
+                            </div>
+                            <Switch
+                                className='cursor-pointer'
+                                id="enhance-toggle"
+                                checked={enhanceEnabled}
+                                onCheckedChange={handleEnhanceToggle}
+                                disabled={featuresLoading}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 

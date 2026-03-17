@@ -32,6 +32,8 @@ const Spinner = () => (
     />
 );
 
+
+
 // Inject keyframes for the spinner (content scripts can't use external CSS on the host page)
 if (!document.getElementById('promptvite-spinner-style')) {
     const style = document.createElement('style');
@@ -43,9 +45,14 @@ if (!document.getElementById('promptvite-spinner-style')) {
 interface PencilButtonProps {
     onClick?: () => void;
     isLoading?: boolean;
+    theme: {
+        pencilColor: string;
+        pencilHoverColor: string;
+        pencilHoverBackground: string;
+    };
 }
 
-export const PencilButton = ({ onClick, isLoading }: PencilButtonProps) => {
+export const PencilButton = ({ onClick, isLoading, theme }: PencilButtonProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
@@ -58,17 +65,17 @@ export const PencilButton = ({ onClick, isLoading }: PencilButtonProps) => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '32px',
-                height: '32px',
+                width: '36px',
+                height: '36px',
                 borderRadius: '50%',
-                // Attempt to use ChatGPT's native CSS variables if available, with fallbacks
-                color: isHovered ? 'var(--text-primary, #000)' : 'var(--text-secondary, #666)',
-                marginLeft: '8px',
+                color: isHovered ? theme.pencilHoverColor : theme.pencilColor,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 border: 'none',
-                background: isHovered && !isLoading ? 'var(--token-main-surface-secondary, rgba(0,0,0,0.1))' : 'transparent',
+                background: isHovered && !isLoading ? theme.pencilHoverBackground : 'transparent',
                 opacity: isLoading ? 0.6 : 1,
-                transition: 'background 0.2s, color 0.2s',
+                transform: isHovered && !isLoading ? 'scale(1.08)' : 'scale(1)',
+                boxShadow: isHovered && !isLoading ? '0 0 15px rgba(255, 255, 255, 0.1)' : 'none',
+                transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             }}
             aria-label={isLoading ? 'Improving prompt...' : 'Enhance prompt'}
             title={isLoading ? 'Improving...' : 'Enhance'}

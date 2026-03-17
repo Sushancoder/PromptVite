@@ -33,7 +33,7 @@ async function handleImprovePrompt(
     }
 
     const res = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
         {
             method: 'POST',
             headers: {
@@ -44,7 +44,7 @@ async function handleImprovePrompt(
                 system_instruction: {
                     parts: [
                         {
-                            text: 'You are a prompt engineer. Rewrite the following prompt to be clearer, more specific, and more effective for an AI assistant. Return only the improved prompt text. No explanations, no preamble, no quotes.',
+                            text: `You are a prompt engineer. Rewrite the following prompt to be clearer, more specific, and more effective to be sent to an AI assistant. Return only the improved prompt text. No explanations, no preamble, no quotes. No answering questions. No markdown formatting.`,
                         },
                     ],
                 },
@@ -67,6 +67,7 @@ async function handleImprovePrompt(
 
     return { improved: improved.trim() };
 }
+
 
 // Optional: Handle side panel
 chrome.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true }).catch(() => {
