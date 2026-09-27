@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { X, Copy, Check, Search, Plus, Minus, Settings, Pencil } from 'lucide-react'
+import { X, Copy, Check, Search, Plus, Minus, Settings, Pencil, AlertTriangle, Trash2 } from 'lucide-react'
 import { type Prompt, loadPrompts, savePrompts } from '@/lib/promptStorage'
 
 
@@ -17,6 +17,7 @@ export default function Main() {
     const [searchQuery, setSearchQuery] = useState('')
     const [showCreateForm, setShowCreateForm] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
+    const [promptToDelete, setPromptToDelete] = useState<Prompt | null>(null)
 
     useEffect(() => {
         const fetchPrompts = async () => {
@@ -79,10 +80,22 @@ export default function Main() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
-    const handleDelete = (id: string) => {
-        const updatedPrompts = prompts.filter(p => p.id !== id)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && promptToDelete) {
+                setPromptToDelete(null)
+            }
+        }
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [promptToDelete])
+
+    const confirmDelete = () => {
+        if (!promptToDelete) return
+        const updatedPrompts = prompts.filter(p => p.id !== promptToDelete.id)
         setPrompts(updatedPrompts)
         saveToStorage(updatedPrompts)
+        setPromptToDelete(null)
     }
 
     const handleCopy = async (id: string, text: string) => {
@@ -233,8 +246,6 @@ export default function Main() {
                 </div>
             </div>
 
-            {/* Prompts List - Minimal Design */}
-            <div className="prompts-list">
             {/* Prompts List - Modern Card Design */}
             <div className="prompts-list pb-20">
                 {prompts.length === 0 ? (
@@ -324,13 +335,13 @@ export default function Main() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
-                                                        handleDelete(p.id)
+                                                        setPromptToDelete(p)
                                                     }}
                                                     className="p-2 rounded-lg bg-background/50 border border-border/50 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all cursor-pointer shadow-sm"
                                                     aria-label="Delete prompt"
                                                     title="Delete prompt"
                                                 >
-                                                    <X className="h-4 w-4" />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </div>
                                         </div>
@@ -379,7 +390,55 @@ export default function Main() {
                     </div>
                 )}
             </div>
-            </div>
+
+            {/* Delete Confirmation Warning Modal */}
+            {promptToDelete && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+                    onClick={() => setPromptToDelete(null)}
+                >
+                    <div
+                        className="w-full max-w-md rounded-xl border border-destructive/30 bg-card p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150"
+                        onClick={(e) => e.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="delete-prompt-dialog-title"
+                    >
+                        <div className="flex items-start gap-4">
+                            <div className="p-2.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20 shrink-0">
+                                <AlertTriangle className="h-5 w-5" />
+                            </div>
+                            <div className="space-y-1.5 flex-1 min-w-0">
+                                <h3 id="delete-prompt-dialog-title" className="text-lg font-bold text-foreground">
+                                    Delete Prompt
+                                </h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    Are you sure you want to delete <span className="font-semibold text-foreground break-all">"{promptToDelete.name}"</span>? This action cannot be undone.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setPromptToDelete(null)}
+                                className="cursor-pointer"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={confirmDelete}
+                                className="cursor-pointer font-bold"
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Fixed Footer - Keyboard Shortcut Hint */}
             <div className="fixed bottom-0 left-0 right-0 py-2 px-4 bg-background/80 backdrop-blur-sm border-t border-border">
